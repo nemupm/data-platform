@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: twitter-reader
+  name: twitter-reader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: twitter-reader
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: twitter-reader
+    spec:
+      containers:
+      - image: docker.for.mac.localhost:5000/twitter-reader:latest
+        name: twitter-reader
+        args: ["ja"]
+        env:
+          - name: TWITTER_CONSUMER_KEY
+            valueFrom:
+              secretKeyRef:
+                name: twitter-secrets
+                key: consumer-key
+          - name: TWITTER_CONSUMER_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: twitter-secrets
+                key: consumer-secret
+        resources: {}
+status: {}
