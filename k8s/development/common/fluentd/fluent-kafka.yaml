@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-kafka-config
+  namespace: kube-system
+data:
+  fluent-kafka.conf: |
+    @include "#{ENV['FLUENTD_SYSTEMD_CONF'] || 'systemd'}.conf"
+    @include "#{ENV['FLUENTD_PROMETHEUS_CONF'] || 'prometheus'}.conf"
+
+    <match fluent.**>
+      @type null
+    </match>
+
+    <source>
+      @type tail
+      @id in_tail_container_logs
+      path /var/log/containers/*.log
+      pos_file /var/log/fluentd-containers.log.pos
+      tag "#{ENV['FLUENT_CONTAINER_TAIL_TAG'] || 'kubernetes.*'}"
+      read_from_head false
+      <parse>
+        @type "#{ENV['FLUENT_CONTAINER_TAIL_PARSER_TYPE'] || 'json'}"
+        time_format %Y-%m-%dT%H:%M:%S.%NZ
+      </parse>
+    </source>
+
+    <match "#{ENV['FLUENT_KAFKA_TAG']}">
+      @type kafka2
+
+      brokers           "#{ENV['FLUENT_KAFKA_BROKERS']}"
+      #topic_key         "#{ENV['FLUENT_KAFKA_TOPIC_KEY']}"
+      default_topic     "#{ENV['FLUENT_KAFKA_DEFAULT_TOPIC']}"
+      partition_key     "#{ENV['FLUENT_KAFKA_PARTITION'] || 'partition'}"
+      partition_key_key "#{ENV['FLUENT_KAFKA_PARTITION_KEY'] || 'partition_key'}"
+      message_key_key   "#{ENV['FLUENT_KAFKA_MESSAGE_KEY'] || 'message_key'}"
+      get_kafka_client_log true
+
+      <format>
+      @type "#{ENV['FLUENT_KAFKA_FORMAT_TYPE'] || 'json'}"
+      </format>
+
+      # Optional. See https://docs.fluentd.org/v/1.0/configuration/inject-section
+      <inject>
+      tag_key tag
+      time_key time
+      </inject>
+
+      # See fluentd document for buffer related parameters: https://docs.fluentd.org/v/1.0/configuration/buffer-section
+      # Buffer chunk key should be same with topic_key. If value is not found in the record, default_topic is used.
+      <buffer>
+      flush_interval 10s
+      </buffer>
+
+      # ruby-kafka producer options
+      max_bytes 1000000
+      max_send_retries  "#{ENV['FLUENT_KAFKA_MAX_SEND_RETRIES'] || 1}"
+      required_acks     "#{ENV['FLUENT_KAFKA_REQUIRED_ACKS'] || -1}"
+      ack_timeout       "#{ENV['FLUENT_KAFKA_ACK_TIMEOUT'] || nil}"
+      compression_codec "#{ENV['FLUENT_KAFKA_COMPRESSION_CODEC'] || 'gzip'}"
+    </match>
+
+    @include conf.d/*.conf
+
+    <match **>
+      @type null
+    </match>
