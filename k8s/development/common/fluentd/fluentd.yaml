@@ -61,7 +61,7 @@ spec:
             - name: FLUENT_KAFKA_BROKERS
               value: kafka.default.svc.cluster.local:9092
             - name: FLUENT_KAFKA_DEFAULT_TOPIC
-              value: twitter_sampled_stream
+              value: twitter.sampled-stream
             - name: # systemd not exists in linuxkit (docker for mac host)
                 FLUENTD_SYSTEMD_CONF
               value: disable
