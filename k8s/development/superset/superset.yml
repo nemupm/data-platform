@@ -1,0 +1,89 @@
+---
+# Source: superset/templates/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: superset
+  labels:
+    app: superset
+    chart: superset-1.1.7
+    release: superset
+    heritage: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9000
+      targetPort: 8088
+      protocol: TCP
+  selector:
+    app: superset
+    release: superset
+---
+# Source: superset/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: superset
+  labels:
+    app: superset
+    chart: superset-1.1.7
+    release: superset
+    heritage: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: superset
+      release: superset
+  template:
+    metadata:
+      name: superset
+      labels:
+        app: superset
+        chart: superset-1.1.7
+        release: superset
+        heritage: Helm
+      annotations:
+        checksum/secrets: 465bee66e9f102fdaa04f1902a6b4d10b9628971fadf1a829fecc5bb1fad3425
+    spec:
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      volumes:
+        - name: superset-configs
+          secret:
+            secretName: superset
+        - name: storage-volume
+          emptyDir: {}
+      containers:
+        - name: superset
+          image: "amancevice/superset:0.28.1"
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/bash"]
+          args: ["/home/superset/init_superset.sh" ]
+          volumeMounts:
+            - name: superset-configs
+              mountPath: /home/superset
+            - name: storage-volume
+              mountPath: /var/lib/superset
+          ports:
+            - name: http
+              containerPort: 8088
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 80
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
