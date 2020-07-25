@@ -7,8 +7,15 @@ metadata:
   name: presto-ingress
 spec:
   rules:
-    - http:
+    - host: presto.localhost
+      http:
         paths:
           - backend:
               serviceName: presto
               servicePort: 8080
+    - host: superset.localhost
+      http:
+        paths:
+          - backend:
+              serviceName: superset
+              servicePort: 9000
