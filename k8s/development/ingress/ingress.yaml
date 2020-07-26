@@ -19,3 +19,21 @@ spec:
           - backend:
               serviceName: superset
               servicePort: 9000
+    - host: kafka-topics-ui.localhost
+      http:
+        paths:
+          - backend:
+              serviceName: kafka-topics-ui
+              servicePort: 8000
+    - host: kafka-connect-ui.localhost
+      http:
+        paths:
+          - backend:
+              serviceName: kafka-connect-ui
+              servicePort: 8000
+    - host: schema-registry-ui.localhost
+      http:
+        paths:
+          - backend:
+              serviceName: schema-registry-ui
+              servicePort: 8000
