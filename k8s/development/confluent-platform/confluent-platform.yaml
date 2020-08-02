@@ -16,6 +16,20 @@ spec:
       release: confluent-platform
   maxUnavailable: 1
 ---
+# Source: cp-helm-charts/charts/cp-kafka-connect/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: confluent-platform-cp-kafka-connect
+  labels:
+    app: cp-kafka-connect
+    chart: cp-kafka-connect-0.1.0
+    release: confluent-platform
+    heritage: Helm
+type: Opaque
+data:
+  externalScript: IyBodHRwczovL2dpdGh1Yi5jb20vY29uZmx1ZW50aW5jL2NwLWhlbG0tY2hhcnRzL2Jsb2IvbWFzdGVyL2V4YW1wbGVzL2NyZWF0ZS1jb25uZWN0b3JzLnNoCnNldCAteAplY2hvICJXYWl0aW5nIGZvciBLYWZrYSBDb25uZWN0IHRvIHN0YXJ0IGxpc3RlbmluZyBvbiBrYWZrYS1jb25uZWN0ICAiCndoaWxlIDo7IGRvCiAgICAjIENoZWNrIGlmIHRoZSBjb25uZWN0b3IgZW5kcG9pbnQgaXMgcmVhZHkKICAgICMgSWYgbm90IGNoZWNrIGFnYWluCiAgICBjdXJsX3N0YXR1cz0kKGN1cmwgLXMgLW8gL2Rldi9udWxsIC13ICV7aHR0cF9jb2RlfSBodHRwOi8vbG9jYWxob3N0OjgwODMvY29ubmVjdG9ycykKICAgIGVjaG8gLWUgIiQoZGF0ZSkiICJLYWZrYSBDb25uZWN0IGxpc3RlbmVyIEhUVFAgc3RhdGU6ICIgJGN1cmxfc3RhdHVzICIgKHdhaXRpbmcgZm9yIDIwMCkiCiAgICBpZiBbICRjdXJsX3N0YXR1cyAtZXEgMjAwIF07IHRoZW4KICAgICAgICBicmVhawogICAgZmkKICAgIHNsZWVwIDUKZG9uZQoKZWNobyAiPT09PT09PiBDcmVhdGluZyBjb25uZWN0b3JzIgojIFNlbmQgYSBzaW1wbGUgUE9TVCByZXF1ZXN0IHRvIGNyZWF0ZSB0aGUgY29ubmVjdG9yCmN1cmwgLVggUE9TVCBcCiAgICAtSCAiQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi9qc29uIiBcCiAgICAtLWRhdGEgJ3sKICAgICJuYW1lIjogInNhbXBsZS1jb25uZWN0b3IiLAogICAgImNvbmZpZyI6IHsKICAgICAgICAiY29ubmVjdG9yLmNsYXNzIjogImlvLmNvbmZsdWVudC5jb25uZWN0LnMzLlMzU2lua0Nvbm5lY3RvciIsCiAgICAgICAgImtleS5jb252ZXJ0ZXIiOiAib3JnLmFwYWNoZS5rYWZrYS5jb25uZWN0LnN0b3JhZ2UuU3RyaW5nQ29udmVydGVyIiwKICAgICAgICAidmFsdWUuY29udmVydGVyIjogIm9yZy5hcGFjaGUua2Fma2EuY29ubmVjdC5zdG9yYWdlLlN0cmluZ0NvbnZlcnRlciIsCiAgICAgICAgImZvcm1hdC5jbGFzcyI6ICJpby5jb25mbHVlbnQuY29ubmVjdC5zMy5mb3JtYXQuanNvbi5Kc29uRm9ybWF0IiwKICAgICAgICAiZmx1c2guc2l6ZSI6IDMsCiAgICAgICAgInMzLmJ1Y2tldC5uYW1lIjogInR3aXR0ZXIiLAogICAgICAgICJyb3RhdGUuaW50ZXJ2YWwubXMiOiA2MDAwMCwKICAgICAgICAic2NoZW1hLmNvbXBhdGliaWxpdHkiOiAiTk9ORSIsCiAgICAgICAgInRvcGljcy5yZWdleCI6ICJjb25mbHVlbnQtcGxhdGZvcm0tY3Ata2Fma2EtY29ubmVjdC1jb25maWciLAogICAgICAgICJhd3MuYWNjZXNzLmtleS5pZCI6ICJBS0lBSU9TRk9ETk43RVhBTVBMRSIsCiAgICAgICAgImF3cy5zZWNyZXQuYWNjZXNzLmtleSI6ICJ3SmFsclhVdG5GRU1JL0s3TURFTkcvYlB4UmZpQ1lFWEFNUExFS0VZIiwKICAgICAgICAic3RvcmFnZS5jbGFzcyI6ICJpby5jb25mbHVlbnQuY29ubmVjdC5zMy5zdG9yYWdlLlMzU3RvcmFnZSIsCiAgICAgICAgInN0b3JlLnVybCI6ICJodHRwOi8vbWluaW8uZGVmYXVsdC5zdmMuY2x1c3Rlci5sb2NhbDo5MDAwIiwKICAgICAgICAicGFydGl0aW9uZXIuY2xhc3MiOiAiaW8uY29uZmx1ZW50LmNvbm5lY3Quc3RvcmFnZS5wYXJ0aXRpb25lci5EZWZhdWx0UGFydGl0aW9uZXIiLAogICAgICAgICJiZWhhdmlvci5vbi5udWxsLnZhbHVlcyI6ICJpZ25vcmUiCiAgICAgICAgfQogICAgfScgaHR0cDovLyRDT05ORUNUX1JFU1RfQURWRVJUSVNFRF9IT1NUX05BTUU6ODA4My9jb25uZWN0b3Jz
+---
 # Source: cp-helm-charts/charts/cp-kafka-connect/templates/jmx-configmap.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -488,9 +502,30 @@ spec:
               value: "io.confluent.connect.avro.AvroConverter"
             - name: "CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE"
               value: "false"
+            - name: "CUSTOM_SCRIPT_PATH"
+              value: "/tmp/scripts/external-script.sh"
             - name: KAFKA_JMX_PORT
               value: "5555"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              /etc/confluent/docker/run &
+              $CUSTOM_SCRIPT_PATH
+              sleep infinity
+          volumeMounts:
+          - mountPath: /tmp/scripts/external-script.sh
+            name: external-script
+            readOnly: true
+            subPath: external-script.sh
       volumes:
+      - name: external-script
+        secret:
+          items:
+          - key: externalScript
+            mode: 493
+            path: external-script.sh
+          secretName: confluent-platform-cp-kafka-connect
       - name: jmx-config
         configMap:
           name: confluent-platform-cp-kafka-connect-jmx-configmap
