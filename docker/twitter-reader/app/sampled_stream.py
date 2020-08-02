@@ -5,7 +5,7 @@ import requests
 import json
 from requests.auth import AuthBase
 from requests.auth import HTTPBasicAuth
-from time import sleep
+from time import sleep, time
 
 consumer_key = os.getenv("TWITTER_CONSUMER_KEY")
 consumer_secret = os.getenv("TWITTER_CONSUMER_SECRET")
@@ -15,9 +15,12 @@ assert consumer_secret, "TWITTER_CONSUMER_SECRET should be set as environment va
 
 lang = None
 args = sys.argv
-assert len(args) == 2, "usage: python sampled_stream.py <lang | all>"
+limit_per_minute = 5
+assert 3 >= len(args) and len(args) >= 2, "usage: python sampled_stream.py <lang | all> [limit per minute]"
 if args[1] != "all":
   lang = args[1]
+if len(args) == 3:
+  limit_per_minute = int(args[2])
 
 stream_url = "https://api.twitter.com/labs/1/tweets/stream/sample"
 
@@ -50,7 +53,15 @@ def stream_connect(auth):
   payload = {"format":"detailed"}
   headers = {"User-Agent": "bot"}
   response = requests.get(stream_url, auth=auth, headers=headers, params=payload, stream=True)
+  count = 0
+  prev_time = time()
   for response_line in response.iter_lines():
+    now = time()
+    if now - prev_time > 60:
+      prev_time = now
+      count = 0
+    elif count >= limit_per_minute:
+      continue
     if response_line:
       obj = json.loads(response_line)
       if "data" not in obj:
@@ -60,6 +71,9 @@ def stream_connect(auth):
       if lang and data["lang"] != lang:
         continue
       print(json.dumps(data, ensure_ascii=False))
+      count += 1
+    else:
+      print("not found", file=sys.stderr)
 
 bearer_token = BearerTokenAuth(consumer_key, consumer_secret)
 
