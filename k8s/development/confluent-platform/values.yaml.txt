@@ -145,12 +145,10 @@ cp-kafka-connect:
       done
 
       echo "======> Creating connectors"
-      # Send a simple POST request to create the connector
-      curl -X POST \
+      # Send a simple PUT request to create or update the connector
+      curl -X PUT \
           -H "Content-Type: application/json" \
           --data '{
-          "name": "sample-connector",
-          "config": {
               "connector.class": "io.confluent.connect.s3.S3SinkConnector",
               "key.converter": "org.apache.kafka.connect.storage.StringConverter",
               "value.converter": "org.apache.kafka.connect.storage.StringConverter",
@@ -159,15 +157,14 @@ cp-kafka-connect:
               "flush.size": 3,
               "rotate.interval.ms": 60000,
               "schema.compatibility": "NONE",
-              "topics.regex": "confluent-platform-cp-kafka-connect-config",
+              "topics": "twitter.sampled-stream",
               "aws.access.key.id": "AKIAIOSFODNN7EXAMPLE",
               "aws.secret.access.key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
               "storage.class": "io.confluent.connect.s3.storage.S3Storage",
               "store.url": "http://minio.default.svc.cluster.local:9000",
               "partitioner.class": "io.confluent.connect.storage.partitioner.DefaultPartitioner",
               "behavior.on.null.values": "ignore"
-              }
-          }' http://$CONNECT_REST_ADVERTISED_HOST_NAME:8083/connectors
+          }' http://$CONNECT_REST_ADVERTISED_HOST_NAME:8083/connectors/sample-connector/config
   # Mounting this secret as a file inside the container
   volumes:
     - name: external-script
