@@ -72,8 +72,6 @@ def stream_connect(auth):
         continue
       print(json.dumps(data, ensure_ascii=False))
       count += 1
-    else:
-      print("not found", file=sys.stderr)
 
 bearer_token = BearerTokenAuth(consumer_key, consumer_secret)
 
