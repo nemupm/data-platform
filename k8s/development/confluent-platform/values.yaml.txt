@@ -61,27 +61,6 @@ cp-kafka:
   #  requests:
   #   cpu: 100m
   #   memory: 128Mi
-  nodeport:
-    enabled: true
-    servicePort: 19092
-    firstListenerPort: 31090
-  configurationOverrides:
-    "offsets.topic.replication.factor": "3"
-    # "default.replication.factor": 3
-    # "min.insync.replicas": 2
-    # "auto.create.topics.enable": false
-
-    ## Options required for external access via NodePort
-    ## ref:
-    ## - http://kafka.apache.org/documentation/#security_configbroker
-    ## - https://cwiki.apache.org/confluence/display/KAFKA/KIP-103%3A+Separation+of+Internal+and+External+traffic
-    ##
-    ## Advertised listeners will use the firstListenerPort value as it's default unless overridden here.
-    ## Setting "advertised.listeners" here appends to "PLAINTEXT://${POD_IP}:9092,"
-    "advertised.listeners": |-
-      EXTERNAL://localhost:$((31090 + ${KAFKA_BROKER_ID}))
-    "listener.security.protocol.map": |-
-      PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
 
 ## ------------------------------------------------------
 ## Schema Registry
@@ -148,6 +127,64 @@ cp-kafka-connect:
   #  requests:
   #   cpu: 100m
   #   memory: 128Mi
+  # Creating secret with a random command
+  secrets:
+    externalScript: |-
+      # https://github.com/confluentinc/cp-helm-charts/blob/master/examples/create-connectors.sh
+      set -x
+      echo "Waiting for Kafka Connect to start listening on kafka-connect  "
+      while :; do
+          # Check if the connector endpoint is ready
+          # If not check again
+          curl_status=$(curl -s -o /dev/null -w %{http_code} http://localhost:8083/connectors)
+          echo -e "$(date)" "Kafka Connect listener HTTP state: " $curl_status " (waiting for 200)"
+          if [ $curl_status -eq 200 ]; then
+              break
+          fi
+          sleep 5
+      done
+
+      echo "======> Creating connectors"
+      # Send a simple POST request to create the connector
+      curl -X POST \
+          -H "Content-Type: application/json" \
+          --data '{
+          "name": "sample-connector",
+          "config": {
+              "connector.class": "io.confluent.connect.s3.S3SinkConnector",
+              "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+              "value.converter": "org.apache.kafka.connect.storage.StringConverter",
+              "format.class": "io.confluent.connect.s3.format.json.JsonFormat",
+              "s3.bucket.name": "twitter",
+              "flush.size": 3,
+              "rotate.interval.ms": 60000,
+              "schema.compatibility": "NONE",
+              "topics.regex": "confluent-platform-cp-kafka-connect-config",
+              "aws.access.key.id": "AKIAIOSFODNN7EXAMPLE",
+              "aws.secret.access.key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+              "storage.class": "io.confluent.connect.s3.storage.S3Storage",
+              "store.url": "http://minio.default.svc.cluster.local:9000",
+              "partitioner.class": "io.confluent.connect.storage.partitioner.DefaultPartitioner",
+              "behavior.on.null.values": "ignore"
+              }
+          }' http://$CONNECT_REST_ADVERTISED_HOST_NAME:8083/connectors
+  # Mounting this secret as a file inside the container
+  volumes:
+    - name: external-script
+      secret:
+        secretName: confluent-platform-cp-kafka-connect
+        items:
+          - key: externalScript
+            path: external-script.sh
+            mode: 0755
+  volumeMounts:
+    - name: external-script
+      mountPath: /tmp/scripts/external-script.sh
+      readOnly: true
+      subPath: external-script.sh
+  # Setting the variable to run the script
+  customEnv:
+    CUSTOM_SCRIPT_PATH: /tmp/scripts/external-script.sh
 
 ## ------------------------------------------------------
 ## KSQL Server
