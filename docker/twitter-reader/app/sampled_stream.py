@@ -52,7 +52,11 @@ def stream_connect(auth):
   response = requests.get(stream_url, auth=auth, headers=headers, params=payload, stream=True)
   for response_line in response.iter_lines():
     if response_line:
-      data = json.loads(response_line)["data"]
+      obj = json.loads(response_line)
+      if "data" not in obj:
+        print("key data is not included in: ", obj, file=sys.stderr)
+        continue
+      data = obj["data"]
       if lang and data["lang"] != lang:
         continue
       print(json.dumps(data, ensure_ascii=False))
