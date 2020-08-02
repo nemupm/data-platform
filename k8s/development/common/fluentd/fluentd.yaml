@@ -37,29 +37,30 @@ subjects:
     namespace: kube-system
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: fluentd
   namespace: kube-system
   labels:
     k8s-app: fluentd-logging
-    version: v1
 spec:
+  selector:
+    matchLabels:
+      name: fluentd
   template:
     metadata:
       labels:
-        k8s-app: fluentd-logging
-        version: v1
+        name: fluentd
     spec:
       containers:
         - name: fluent-kafka
-          image: fluent/fluentd-kubernetes-daemonset:v1-debian-kafka
+          image: fluent/fluentd-kubernetes-daemonset:v1.11.1-debian-kafka-1.0
           env:
             - name: FLUENT_KAFKA_TAG
               value: kubernetes.var.log.containers.twitter-reader-**
             - name: FLUENT_KAFKA_BROKERS
-              value: kafka.default.svc.cluster.local:9092
+              value: confluent-platform-cp-kafka-headless.default.svc.cluster.local:9092
             - name: FLUENT_KAFKA_DEFAULT_TOPIC
               value: twitter.sampled-stream
             - name: # systemd not exists in linuxkit (docker for mac host)
