@@ -162,7 +162,10 @@ cp-kafka-connect:
               "aws.secret.access.key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
               "storage.class": "io.confluent.connect.s3.storage.S3Storage",
               "store.url": "http://minio.default.svc.cluster.local:9000",
-              "partitioner.class": "io.confluent.connect.storage.partitioner.DefaultPartitioner",
+              "partitioner.class": "io.confluent.connect.storage.partitioner.DailyPartitioner",
+              "locale": "ja-JP",
+              "timezone": "Asia/Tokyo",
+              "timestamp.extractor": "Wallclock",
               "behavior.on.null.values": "ignore"
           }' http://$CONNECT_REST_ADVERTISED_HOST_NAME:8083/connectors/sample-connector/config
   # Mounting this secret as a file inside the container
