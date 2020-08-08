@@ -20,7 +20,7 @@ spec:
       containers:
       - image: docker.for.mac.localhost:5000/twitter-reader:latest
         name: twitter-reader
-        args: ["ja"]
+        args: ["ja", "10"]
         env:
           - name: TWITTER_CONSUMER_KEY
             valueFrom:
