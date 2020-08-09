@@ -10,11 +10,6 @@ on:
     paths:
       - 'docker/twitter-reader/**'
 
-defaults:
-  run:
-    shell: bash
-    working-directory: docker/twitter-reader
-
 jobs:
 
   update-image:
@@ -31,3 +26,4 @@ jobs:
         password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
         repository: nemupm/twitter-reader
         tag_with_ref: true
+        path: docker/twitter-reader
