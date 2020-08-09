@@ -1,0 +1,33 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'docker/twitter-reader/**'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'docker/twitter-reader/**'
+
+defaults:
+  run:
+    shell: bash
+    working-directory: docker/twitter-reader
+
+jobs:
+
+  update-image:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Push to Docker Hub
+      uses: docker/build-push-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+        repository: nemupm/twitter-reader
+        tag_with_ref: true
