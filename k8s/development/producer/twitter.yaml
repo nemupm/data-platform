@@ -18,7 +18,7 @@ spec:
         app: twitter-reader
     spec:
       containers:
-      - image: docker.for.mac.localhost:5000/twitter-reader:latest
+      - image: nemupm/twitter-reader:latest
         name: twitter-reader
         args: ["ja", "10"]
         env:

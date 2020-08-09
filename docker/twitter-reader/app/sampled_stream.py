@@ -15,7 +15,7 @@ assert consumer_secret, "TWITTER_CONSUMER_SECRET should be set as environment va
 
 lang = None
 args = sys.argv
-limit_per_minute = 5
+limit_per_minute = 10
 assert 3 >= len(args) and len(args) >= 2, "usage: python sampled_stream.py <lang | all> [limit per minute]"
 if args[1] != "all":
   lang = args[1]
