@@ -23,8 +23,8 @@ spec:
   mode: cluster
   image: "gcr.io/spark-operator/spark:v3.0.0"
   imagePullPolicy: Always
-  mainClass: com.nemupm.spark.TweetsToCooccurence
-  mainApplicationFile: "https://s3-ap-northeast-1.amazonaws.com/share.nemupm.com/spark-application/tweets-to-cooccurrence-project_2.12-1.0.jar"
+  mainClass: com.nemupm.spark.TweetsToCooccurrence
+  mainApplicationFile: "https://s3-ap-northeast-1.amazonaws.com/share.nemupm.com/spark-application/tweets-to-co-occurrence-project_2.12-1.0.jar"
   sparkVersion: "3.0.0"
   restartPolicy:
     type: Never
