@@ -45,10 +45,10 @@ spec:
         mountPath: "/tmp"
     env:
       - name: S3_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              name: minio
-              key: accesskey
+        valueFrom:
+          secretKeyRef:
+            name: minio
+            key: accesskey
       - name: S3_SECRET_KEY
         valueFrom:
           secretKeyRef:
@@ -67,10 +67,10 @@ spec:
         mountPath: "/tmp"
     env:
       - name: S3_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              name: minio
-              key: accesskey
+        valueFrom:
+          secretKeyRef:
+            name: minio
+            key: accesskey
       - name: S3_SECRET_KEY
         valueFrom:
           secretKeyRef:
