@@ -8503,6 +8503,11 @@ rules:
 - apiGroups: ["sparkoperator.k8s.io"]
   resources: ["sparkapplications", "scheduledsparkapplications", "sparkapplications/status", "scheduledsparkapplications/status"]
   verbs: ["*"]
+  
+  # This permission is granted only if the webhook is enabled
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["delete"]
 ---
 # Source: sparkoperator/templates/spark-operator-rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -8569,6 +8574,26 @@ roleRef:
   name: spark-role
   apiGroup: rbac.authorization.k8s.io
 ---
+# Source: sparkoperator/templates/webhook-service.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: spark-operator-webhook
+  namespace: spark-operator
+  labels:
+    app.kubernetes.io/name: sparkoperator
+    helm.sh/chart: sparkoperator-0.8.2
+    app.kubernetes.io/instance: spark-operator
+    app.kubernetes.io/managed-by: Helm
+spec:
+  ports:
+  - port: 443
+    targetPort: 8080
+    name: webhook
+  selector:
+    app.kubernetes.io/name: sparkoperator
+    app.kubernetes.io/version: v1beta2-1.2.0-3.0.0
+---
 # Source: sparkoperator/templates/spark-operator-deployment.yaml
 # If the admission webhook is enabled, then a post-install step is required
 # to generate and install the secret in the operator namespace.
@@ -8607,10 +8632,17 @@ spec:
       serviceAccountName: spark-operator-sparkoperator
       imagePullSecrets:
         []
+      volumes:
+        - name: webhook-certs
+          secret:
+            secretName: spark-webhook-certs
       containers:
       - name: sparkoperator
         image: gcr.io/spark-operator/spark-operator:v1beta2-1.2.0-3.0.0
         imagePullPolicy: IfNotPresent
+        volumeMounts:
+          - name: webhook-certs
+            mountPath: /etc/webhook-certs
         ports:
           - containerPort: 10254
         
@@ -8626,6 +8658,36 @@ spec:
         - -metrics-port=10254
         - -metrics-endpoint=/metrics
         - -metrics-prefix=
+        - -enable-webhook=true
+        - -webhook-svc-namespace=spark-operator
+        - -webhook-port=8080
+        - -webhook-svc-name=spark-operator-webhook
+        - -webhook-config-name=spark-operator-sparkoperator-webhook-config
+        - -webhook-namespace-selector=
+---
+# Source: sparkoperator/templates/webhook-init-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spark-operator-sparkoperator-webhook-init
+  namespace: spark-operator
+  labels:
+    app.kubernetes.io/name: sparkoperator
+    helm.sh/chart: sparkoperator-0.8.2
+    app.kubernetes.io/instance: spark-operator
+    app.kubernetes.io/managed-by: Helm
+spec:
+  template:
+    spec:
+      serviceAccountName: spark-operator-sparkoperator
+      restartPolicy: OnFailure
+      imagePullSecrets:
+        []
+      containers:
+      - name: main
+        image: gcr.io/spark-operator/spark-operator:v1beta2-1.2.0-3.0.0
+        imagePullPolicy: IfNotPresent
+        command: ["/usr/bin/gencerts.sh", "-n", "spark-operator", "-s", "spark-operator-webhook", "-p"]
 ---
 # Source: sparkoperator/templates/crd-cleanup-job.yaml
 apiVersion: batch/v1
@@ -8673,3 +8735,46 @@ spec:
           -H \"Accept: application/json\" \
           -H \"Content-Type: application/json\" \
           https://kubernetes.default.svc/apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions/scheduledsparkapplications.sparkoperator.k8s.io"
+---
+# Source: sparkoperator/templates/webhook-cleanup-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spark-operator-sparkoperator-webhook-cleanup
+  namespace: spark-operator
+  annotations:
+    "helm.sh/hook": pre-delete, pre-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded
+  labels:
+    app.kubernetes.io/name: sparkoperator
+    helm.sh/chart: sparkoperator-0.8.2
+    app.kubernetes.io/instance: spark-operator
+    app.kubernetes.io/managed-by: Helm
+spec:
+  template:
+    spec:
+      serviceAccountName: spark-operator-sparkoperator
+      restartPolicy: OnFailure
+      imagePullSecrets:
+        []
+      containers:
+      - name: clean-secret
+        image: gcr.io/spark-operator/spark-operator:v1beta2-1.2.0-3.0.0
+        imagePullPolicy: IfNotPresent
+        command:
+        - "/bin/sh"
+        - "-c"
+        - "curl -ik \
+          -X DELETE \
+          -H \"Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\" \
+          -H \"Accept: application/json\" \
+          -H \"Content-Type: application/json\" \
+          https://kubernetes.default.svc/api/v1/namespaces/spark-operator/secrets/spark-webhook-certs \
+          && \
+          curl -ik \
+          -X DELETE \
+          -H \"Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\" \
+          -H \"Accept: application/json\" \
+          -H \"Content-Type: application/json\" \
+          --data \"{\\\"kind\\\":\\\"DeleteOptions\\\",\\\"apiVersion\\\":\\\"batch/v1\\\",\\\"propagationPolicy\\\":\\\"Foreground\\\"}\" \
+          https://kubernetes.default.svc/apis/batch/v1/namespaces/spark-operator/jobs/spark-operator-sparkoperator-webhook-init"
