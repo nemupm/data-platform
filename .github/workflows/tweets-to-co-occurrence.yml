@@ -30,7 +30,7 @@ jobs:
           java-version: 1.8
 
       - name: Build package
-        run: sbt package
+        run: sbt assembly
         working-directory: "./spark/${{ env.APP_NAME }}"
 
       - name: Configure AWS credentials to s3 share bucket
@@ -43,7 +43,7 @@ jobs:
       - name: Upload file to S3
         env:
           S3_UPLOAD_BUCKET: share.nemupm.com
-          JAR_PATH: "./target/scala-2.12/${{ env.APP_NAME }}-project_2.12-1.0.jar"
+          JAR_PATH: "./target/scala-2.12/${{ env.APP_NAME }}-project-assembly-1.0.jar"
         run: |
           aws s3 cp ${JAR_PATH} s3://${S3_UPLOAD_BUCKET}/spark-application/ --acl public-read
         working-directory: "./spark/${{ env.APP_NAME }}"

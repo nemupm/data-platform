@@ -8,12 +8,15 @@ object TweetsToCooccurrence {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
       .builder
-      .appName("Spark Pi")
+      .appName("Tweets to Co-occurrence")
       .getOrCreate()
+    // Thread.sleep(1000000)
     val sc = spark.sparkContext
+    sc.hadoopConfiguration.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
     sc.hadoopConfiguration.set("fs.s3a.access.key", sys.env("S3_ACCESS_KEY"))
     sc.hadoopConfiguration.set("fs.s3a.secret.key", sys.env("S3_SECRET_KEY"))
     sc.hadoopConfiguration.set("fs.s3a.endpoint", sys.env("S3_ENDPOINT"))
+    sc.hadoopConfiguration.set("fs.s3a.path.style.access", "true")
     sc.hadoopConfiguration.set("fs.s3a.connection.ssl.enabled", "false")
 
     val lines = sc.textFile("s3a://twitter/topics/twitter.sampled-stream/year=2020/month=08/day=10/twitter.sampled-stream+0+0000075019.json")
