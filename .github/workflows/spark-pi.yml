@@ -5,10 +5,12 @@ on:
     branches: [ master ]
     paths:
       - 'spark/spark-pi/**'
+      - '.github/workflows/spark-pi.yml'
   pull_request:
     branches: [ master ]
     paths:
       - 'spark/spark-pi/**'
+      - '.github/workflows/spark-pi.yml'
 
 jobs:
   build:
@@ -38,6 +40,7 @@ jobs:
       - name: Upload file to S3
         env:
           S3_UPLOAD_BUCKET: share.nemupm.com
+          JAR_PATH: ./target/scala-2.12/spark-pi-project_2.12-1.0.jar
         run: |
-          aws s3 cp ./spark-pi-project_2.12-1.0.jar s3://${S3_UPLOAD_BUCKET}/spark-application/ --quiet
+          aws s3 cp ${JAR_PATH} s3://${S3_UPLOAD_BUCKET}/spark-application/ --acl public-read
         working-directory: ./spark/spark-pi
