@@ -12,14 +12,8 @@ import org.chasen.mecab.Node;
 /** ETL job from tweets to co-occurrence of words */
 object TweetsToCooccurrence {
   def main(args: Array[String]): Unit = {
-    try System.load("/usr/local/lib/libMeCab.so")
-    catch {
-      case e : Throwable =>
-        System.err.println("Cannot load the example native code.\nMake sure your LD_LIBRARY_PATH contains \'.\'\n" + e)
-        System.exit(1)
-    }
-
-    val tagger = new Tagger()
+    System.loadLibrary("MeCab")
+    val tagger = new Tagger
     val str = "太郎は二郎にこの本を渡した。"
     System.out.println(tagger.parse(str))
 
