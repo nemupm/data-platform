@@ -3,10 +3,26 @@ package com.nemupm.spark
 
 import org.apache.spark.sql.SparkSession
 import java.net.InetAddress
+import org.chasen.mecab.MeCab;
+import org.chasen.mecab.Tagger;
+import org.chasen.mecab.Model;
+import org.chasen.mecab.Lattice;
+import org.chasen.mecab.Node;
 
 /** ETL job from tweets to co-occurrence of words */
 object TweetsToCooccurrence {
   def main(args: Array[String]): Unit = {
+    try System.loadLibrary("MeCab")
+    catch {
+      case e : Throwable =>
+        System.err.println("Cannot load the example native code.\nMake sure your LD_LIBRARY_PATH contains \'.\'\n" + e)
+        System.exit(1)
+    }
+
+    val tagger = new Tagger
+    val str = "太郎は二郎にこの本を渡した。"
+    System.out.println(tagger.parse(str))
+
     val spark = SparkSession
       .builder
       .appName("Tweets to Co-occurrence")

@@ -7,9 +7,6 @@ scalaVersion := "2.12.10"
 resolvers += "Palantir repository" at "https://dl.bintray.com/palantir/releases/"
 
 libraryDependencies += "org.apache.spark" %% "spark-sql" % "3.0.0"
-//libraryDependencies += "org.apache.spark" %% "spark-hadoop-cloud" % "3.0.0-palantir.77" excludeAll(
-//  ExclusionRule("org.apache.avro", "avro-tools")
-//)
 libraryDependencies += "org.apache.hadoop" % "hadoop-common" % "2.7.4"
 libraryDependencies += "org.apache.hadoop" % "hadoop-aws" % "2.7.4"
 
