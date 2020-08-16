@@ -17,7 +17,7 @@ ENV NEOLOGD_WORK=opt/spark/jars/
 
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y build-essential file git curl
-RUN apt-get install -y mecab=0.996-6 libmecab-dev=0.996-6 mecab-ipadic-utf8
+RUN apt-get install -y mecab=0.996-6 libmecab-dev=0.996-6 libmecab-jni=0.99.6-3 mecab-ipadic-utf8
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN mkdir -p ${NEOLOGD_PATH} ${NEOLOGD_WORK}
 WORKDIR ${NEOLOGD_WORK}
@@ -30,4 +30,4 @@ COPY --from=builder /tmp/mecab-java-0.996/libMeCab.so /usr/local/lib/
 
 USER 185
 
-ENV LD_LIBRARY_PATH=/usr/local/lib/:.
+ENV LD_LIBRARY_PATH=/usr/local/lib:.
