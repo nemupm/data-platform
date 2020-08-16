@@ -2,6 +2,7 @@
 package com.nemupm.spark
 
 import org.apache.spark.sql.SparkSession
+import java.net.InetAddress
 
 /** ETL job from tweets to co-occurrence of words */
 object TweetsToCooccurrence {
@@ -15,9 +16,13 @@ object TweetsToCooccurrence {
     sc.hadoopConfiguration.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
     sc.hadoopConfiguration.set("fs.s3a.access.key", sys.env("S3_ACCESS_KEY"))
     sc.hadoopConfiguration.set("fs.s3a.secret.key", sys.env("S3_SECRET_KEY"))
-    sc.hadoopConfiguration.set("fs.s3a.endpoint", sys.env("S3_ENDPOINT"))
     sc.hadoopConfiguration.set("fs.s3a.path.style.access", "true")
     sc.hadoopConfiguration.set("fs.s3a.connection.ssl.enabled", "false")
+
+    // Use ip address instead of hostname because "{bucket name}.hostname" cannot be resolved.
+    val address: InetAddress = InetAddress.getByName(sys.env("S3_ENDPOINT_HOSTNAME"));
+    val endpoint = "http://" + address.getHostAddress() + ":" + sys.env("S3_ENDPOINT_PORT");
+    sc.hadoopConfiguration.set("fs.s3a.endpoint", endpoint);
 
     val lines = sc.textFile("s3a://twitter/topics/twitter.sampled-stream/year=2020/month=08/day=10/twitter.sampled-stream+0+0000075019.json")
     val lineLengths = lines.map(s => s.length)
