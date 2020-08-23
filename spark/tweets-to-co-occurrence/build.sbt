@@ -9,6 +9,7 @@ resolvers += "Palantir repository" at "https://dl.bintray.com/palantir/releases/
 libraryDependencies += "org.apache.spark" %% "spark-sql" % "3.0.0"
 libraryDependencies += "org.apache.hadoop" % "hadoop-common" % "2.7.4"
 libraryDependencies += "org.apache.hadoop" % "hadoop-aws" % "2.7.4"
+libraryDependencies += "com.typesafe.play" %% "play-json" % "2.9.0"
 
 assemblyMergeStrategy in assembly := {
   case PathList("javax", "servlet", xs @ _*)         => MergeStrategy.first
