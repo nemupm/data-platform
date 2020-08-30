@@ -133,7 +133,7 @@ cp-kafka-connect:
       # https://github.com/confluentinc/cp-helm-charts/blob/master/examples/create-connectors.sh
       set -x
       echo "Waiting for Kafka Connect to start listening on kafka-connect  "
-      while :; do
+      for i in $(seq 0 30); do
           # Check if the connector endpoint is ready
           # If not check again
           curl_status=$(curl -s -o /dev/null -w %{http_code} http://localhost:8083/connectors)
@@ -141,7 +141,7 @@ cp-kafka-connect:
           if [ $curl_status -eq 200 ]; then
               break
           fi
-          sleep 5
+          sleep 10
       done
 
       echo "======> Creating connectors"
@@ -151,7 +151,8 @@ cp-kafka-connect:
           --data '{
               "connector.class": "io.confluent.connect.s3.S3SinkConnector",
               "key.converter": "org.apache.kafka.connect.storage.StringConverter",
-              "value.converter": "org.apache.kafka.connect.storage.StringConverter",
+              "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+              "value.converter.schemas.enable": "false",
               "format.class": "io.confluent.connect.s3.format.json.JsonFormat",
               "s3.bucket.name": "twitter",
               "flush.size": 1000,
