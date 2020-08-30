@@ -151,7 +151,8 @@ cp-kafka-connect:
           --data '{
               "connector.class": "io.confluent.connect.s3.S3SinkConnector",
               "key.converter": "org.apache.kafka.connect.storage.StringConverter",
-              "value.converter": "org.apache.kafka.connect.storage.StringConverter",
+              "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+              "value.converter.schemas.enable": "false",
               "format.class": "io.confluent.connect.s3.format.json.JsonFormat",
               "s3.bucket.name": "twitter",
               "flush.size": 1000,
