@@ -10,6 +10,7 @@ import org.chasen.mecab.Lattice
 import org.chasen.mecab.Node
 import scala.collection.mutable.Set
 import play.api.libs.json._
+import com.datastax.spark.connector.cql._
 
 case class Tweet(log: String, stream: String, tag: Option[String], time: Double)
 object Tweet {
@@ -85,6 +86,10 @@ object TweetsToCooccurrence {
     println(setList(0))
 //    val totalLength = lineLengths.reduce((a, b) => a + b)
 //    println(s"total length is ${totalLength}")
+
+    spark.conf.set(s"spark.sql.catalog.catalog-development", "com.datastax.spark.connector.datasource.CassandraCatalog")
+    spark.conf.set(s"spark.sql.catalog.catalog-development.spark.cassandra.connection.host", "cassandra.default.svc.cluster.local")
+    spark.sql("SHOW NAMESPACES FROM catalog-development").show
     spark.stop()
   }
 }

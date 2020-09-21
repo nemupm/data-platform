@@ -1,0 +1,50 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cassandra-init-cql
+data:
+  init.cql: |
+    CREATE KEYSPACE IF NOT EXISTS development
+      WITH REPLICATION = {
+        'class' : 'SimpleStrategy',
+        'replication_factor' : 1
+      };
+
+    USE development;
+    
+    CREATE TABLE IF NOT EXISTS word_cooccurrence (
+        word      text
+      , cnt       map<text, int>
+      , update_at map<text, timestamp>
+      , PRIMARY KEY(word)
+    );
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  creationTimestamp: null
+  name: init-cassandra
+spec:
+  template:
+    metadata:
+      creationTimestamp: null
+    spec:
+      containers:
+      - image: cassandra
+        name: init-cassandra
+        resources: {}
+        command: ["/bin/sh", "-c", "cqlsh cassandra.default.svc.cluster.local -f /tmp/init.cql"]
+        volumeMounts:
+        - mountPath: /tmp
+          name: init-cassandra-volume
+      restartPolicy: Never
+      volumes:
+      - name: init-cassandra-volume
+        configMap:
+          name: cassandra-init-cql
+          items:
+          - key: init.cql
+            path: init.cql
+status: {}

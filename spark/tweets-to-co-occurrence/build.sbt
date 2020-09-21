@@ -10,6 +10,7 @@ libraryDependencies += "org.apache.spark" %% "spark-sql" % "3.0.0"
 libraryDependencies += "org.apache.hadoop" % "hadoop-common" % "2.7.4"
 libraryDependencies += "org.apache.hadoop" % "hadoop-aws" % "2.7.4"
 libraryDependencies += "com.typesafe.play" %% "play-json" % "2.9.0"
+libraryDependencies += "com.datastax.spark" %% "spark-cassandra-connector" % "3.0.0-beta"
 
 assemblyMergeStrategy in assembly := {
   case PathList("javax", "servlet", xs @ _*)         => MergeStrategy.first
