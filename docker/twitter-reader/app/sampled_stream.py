@@ -22,7 +22,7 @@ if args[1] != "all":
 if len(args) == 3:
   limit_per_minute = int(args[2])
 
-stream_url = "https://api.twitter.com/labs/1/tweets/stream/sample"
+stream_url = "https://api.twitter.com/2/tweets/sample/stream"
 
 # Gets a bearer token
 class BearerTokenAuth(AuthBase):
@@ -39,7 +39,7 @@ class BearerTokenAuth(AuthBase):
       data={'grant_type': 'client_credentials'},
       headers={"User-Agent": "bot"})
 
-    if response.status_code is not 200:
+    if response.status_code != 200:
       raise Exception("Cannot get a Bearer token (HTTP {}): {}".format(response.status_code, response.text))
 
     body = response.json()
@@ -50,7 +50,7 @@ class BearerTokenAuth(AuthBase):
     return r
 
 def stream_connect(auth):
-  payload = {"format":"detailed"}
+  payload = {"tweet.fields":"created_at,lang"}
   headers = {"User-Agent": "bot"}
   response = requests.get(stream_url, auth=auth, headers=headers, params=payload, stream=True)
   count = 0
