@@ -41,10 +41,10 @@ spec:
     memory: "512m"
     labels:
       version: 3.0.0
-    serviceAccount: spark
+    serviceAccount: spark-operator-spark
     volumeMounts:
       - name: "test-volume"
-        mountPath: "/tmp"
+        mountPath: "/test-volume"
   executor:
     cores: 1
     instances: 1
@@ -53,4 +53,4 @@ spec:
       version: 3.0.0
     volumeMounts:
       - name: "test-volume"
-        mountPath: "/tmp"
+        mountPath: "/test-volume"
