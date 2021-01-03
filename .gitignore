@@ -1,0 +1,16 @@
+project
+target
+.idea
+# Created by https://www.toptal.com/developers/gitignore/api/vscode,metals
+# Edit at https://www.toptal.com/developers/gitignore?templates=vscode,metals
+
+### Metals ###
+.metals/
+.bloop/
+project/**/metals.sbt
+
+### vscode ###
+.vscode/*
+*.code-workspace
+
+# End of https://www.toptal.com/developers/gitignore/api/vscode,metals
