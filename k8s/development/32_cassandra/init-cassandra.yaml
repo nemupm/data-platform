@@ -15,8 +15,9 @@ data:
     
     CREATE TABLE IF NOT EXISTS word_cooccurrence (
         word      text
-      , cnt       map<text, int>
-      , update_at map<text, timestamp>
+      , cnt       int
+      , co_cnt    map<text, int>
+      , updated_at map<text, timestamp>
       , PRIMARY KEY(word)
     );
 
