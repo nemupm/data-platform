@@ -25,6 +25,7 @@ spec:
   imagePullPolicy: Always
   mainClass: com.nemupm.spark.TweetsToCooccurrence
   mainApplicationFile: "https://s3-ap-northeast-1.amazonaws.com/share.nemupm.com/spark-application/tweets-to-co-occurrence-project-assembly-1.0.jar"
+#  mainApplicationFile: "local:///test-volume/tweets-to-co-occurrence-project-assembly-1.0.jar" # for test
   sparkVersion: "3.0.0"
   restartPolicy:
     type: Never
@@ -32,10 +33,10 @@ spec:
     - name: "test-volume"
       hostPath:
         path: "/tmp"
+#        path: "<HOME>/src/github.com/nemupm/data-platform/spark/tweets-to-co-occurrence/target/scala-2.12/" # for test
         type: Directory
   driver:
     cores: 1
-    coreLimit: "1200m"
     memory: "512m"
     labels:
       version: 3.0.0
