@@ -126,7 +126,7 @@ object TweetsToCooccurrence {
     spark.conf.set(s"spark.sql.catalog.catalog-development", "com.datastax.spark.connector.datasource.CassandraCatalog")
     spark.conf.set(s"spark.sql.catalog.catalog-development.spark.cassandra.connection.host", "cassandra.default.svc.cluster.local")
     var ds: Dataset[WordCooccurrence] = spark.createDataset(rows)
-    ds.writeTo("`catalog-development`.development.word_cooccurrence").append()
+    ds.writeTo("`catalog-development`.development.word_cooccurrences").append()
     // spark.sql("SHOW NAMESPACES FROM `catalog-development`").show
     spark.stop()
   }
