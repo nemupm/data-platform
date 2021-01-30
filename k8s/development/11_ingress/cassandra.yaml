@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+  name: ingress-cassandra
+spec:
+  rules:
+    - host: cassandra.localhost
+      http:
+        paths:
+          - backend:
+              serviceName: cassandra
+              servicePort: 9042
