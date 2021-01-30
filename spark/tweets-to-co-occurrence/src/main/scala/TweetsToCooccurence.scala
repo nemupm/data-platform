@@ -1,11 +1,11 @@
 // scalastyle:off println
 package com.nemupm.spark
 
-import org.joda.time.DateTime
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.Dataset
 import org.apache.spark.rdd.{RDD}
 
+import java.sql.Timestamp
 import java.net.InetAddress
 import org.chasen.mecab.MeCab
 import org.chasen.mecab.Tagger
@@ -41,7 +41,7 @@ case class WordCooccurrence(
                              word: String,
                              cnt: Int,
                              co_cnt: Map[String, Int],
-                             updated_at: Map[String, DateTime]
+                             updated_at: Map[String, Timestamp]
                            )
 
 /** ETL job from tweets to co-occurrence of words */
@@ -115,25 +115,19 @@ object TweetsToCooccurrence {
         })
       })
     })
-    //    var debug = ""
-    //    pairs.foreach{case (word1,v) =>
-    //      v.foreach{case (word2, cnt) =>
-    //        debug += s"($word1, $word2) = $cnt \n"
-    //      }
-    //    }
-    //    println(debug)
+    
     println(s"word cnt is ${pairs.size}")
 
     var rows = pairs
       .toList
       .map(value => {
-        WordCooccurrence(value._1, 1, value._2, null)
+        WordCooccurrence(value._1, 1, value._2, Map[String, Timestamp]())
       })
     spark.conf.set(s"spark.sql.catalog.catalog-development", "com.datastax.spark.connector.datasource.CassandraCatalog")
     spark.conf.set(s"spark.sql.catalog.catalog-development.spark.cassandra.connection.host", "cassandra.default.svc.cluster.local")
     var ds: Dataset[WordCooccurrence] = spark.createDataset(rows)
-    ds.writeTo("development.word_cooccurrence")
-    //    spark.sql("SHOW NAMESPACES FROM `catalog-development`").show
+    ds.writeTo("`catalog-development`.development.word_cooccurrence").append()
+    // spark.sql("SHOW NAMESPACES FROM `catalog-development`").show
     spark.stop()
   }
 }
