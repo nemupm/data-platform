@@ -13,7 +13,7 @@ data:
 
     USE development;
     
-    CREATE TABLE IF NOT EXISTS word_cooccurrence (
+    CREATE TABLE IF NOT EXISTS word_cooccurrences (
         word      text
       , cnt       int
       , co_cnt    map<text, int>
