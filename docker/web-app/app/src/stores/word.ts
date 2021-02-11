@@ -8,17 +8,24 @@ import {
   WordCooccurrence,
 } from "../api/wordAPI";
 
+interface History {
+  name: string;
+  index: number;
+}
+
 interface WordState {
   word: Word;
+  history: History[];
   error: string;
 }
 
 const initialState: WordState = {
   word: <Word>{
-    name: "test",
+    name: "",
     relatedWords: [],
     cnt: 0,
   },
+  history: [],
   error: "",
 };
 
@@ -32,10 +39,23 @@ export const wordSlice = createSlice({
     },
     fetchWordCooccurrenceSuccess(
       state,
-      action: PayloadAction<WordAPIResponse<WordCooccurrence>>
+      action: PayloadAction<{
+        res: WordAPIResponse<WordCooccurrence>;
+        index: number;
+      }>
     ) {
       // eslint-disable-next-line no-param-reassign
-      state.word = getWordFromResponse(action.payload);
+      state.word = getWordFromResponse(action.payload.res);
+      if (action.payload.index !== -1) {
+        // eslint-disable-next-line no-param-reassign
+        state.history = state.history.filter(
+          (hist) => hist.index < action.payload.index
+        );
+      }
+      state.history.push({
+        name: state.word.name,
+        index: state.history.length,
+      });
     },
     fetchWordCooccurrenceFailed(state, action: PayloadAction<string>) {
       // eslint-disable-next-line no-param-reassign
@@ -54,10 +74,12 @@ export const {
 
 export default wordSlice.reducer;
 
-export const fetchWord = (query: string): AppThunk => async (dispatch) => {
+export const fetchWord = (query: string, index = -1): AppThunk => async (
+  dispatch
+) => {
   try {
     const res = await fetchWordCooccurrence(query);
-    dispatch(fetchWordCooccurrenceSuccess(res));
+    dispatch(fetchWordCooccurrenceSuccess({ res, index }));
   } catch (err) {
     dispatch(fetchWordCooccurrenceFailed(err.toString()));
   }
