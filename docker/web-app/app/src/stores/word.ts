@@ -1,7 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AppThunk } from "./index";
 import { Word } from "../models/word";
-import { fetchWordCooccurrence, WordCooccurrence } from "../api/wordAPI";
+import {
+  fetchWordCooccurrence,
+  getWordFromResponse,
+  WordAPIResponse,
+  WordCooccurrence,
+} from "../api/wordAPI";
 
 interface WordState {
   word: Word;
@@ -27,12 +32,10 @@ export const wordSlice = createSlice({
     },
     fetchWordCooccurrenceSuccess(
       state,
-      action: PayloadAction<WordCooccurrence>
+      action: PayloadAction<WordAPIResponse<WordCooccurrence>>
     ) {
       // eslint-disable-next-line no-param-reassign
-      state.word.name = action.payload.word;
-      // eslint-disable-next-line no-console
-      console.log(action.payload);
+      state.word = getWordFromResponse(action.payload);
     },
     fetchWordCooccurrenceFailed(state, action: PayloadAction<string>) {
       // eslint-disable-next-line no-param-reassign
