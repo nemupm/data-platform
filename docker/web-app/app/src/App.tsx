@@ -44,9 +44,10 @@ const App: React.FunctionComponent = () => {
   const dispatch = useDispatch();
   const wordState = useSelector((state: RootState) => state.word);
   const relatedWordList = wordState.word.relatedWords.map((relatedWord) => (
-    <Grid key={relatedWord.name} item>
+    <Grid key={`related_word__${relatedWord.name}`} item>
       <Chip
         label={relatedWord.name}
+        variant="outlined"
         onClick={() => {
           dispatch(fetchWord(relatedWord.name));
           dispatch(change("search", "query", relatedWord.name));
@@ -55,18 +56,22 @@ const App: React.FunctionComponent = () => {
     </Grid>
   ));
   const historyList = wordState.history.reduce<React.ReactNode[]>(
-    (accumulator, hist) => {
+    (accumulator, hist, index, array) => {
       if (accumulator.length !== 0) {
         accumulator.push(
-          <Grid key={hist.name} item>
+          // eslint-disable-next-line react/no-array-index-key
+          <Grid key={`history_list__${index}__right`} item>
             <ChevronRightIcon key={hist.name} />
           </Grid>
         );
       }
       accumulator.push(
-        <Grid key={hist.name} item>
+        // eslint-disable-next-line react/no-array-index-key
+        <Grid key={`history_list__${index}__word`} item>
           <Chip
             label={hist.name}
+            variant={index === array.length - 1 ? "default" : "outlined"}
+            color="primary"
             onClick={() => {
               dispatch(fetchWord(hist.name, hist.index));
               dispatch(change("search", "query", hist.name));
@@ -88,7 +93,7 @@ const App: React.FunctionComponent = () => {
           <Typography className={classes.historyContentHeader} variant="h5">
             History
           </Typography>
-          <Grid container spacing={2}>
+          <Grid container spacing={2} alignItems="center">
             {historyList}
           </Grid>
         </Paper>
