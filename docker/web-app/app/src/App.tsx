@@ -1,33 +1,65 @@
 import React from "react";
-import "./App.css";
 import { useDispatch, useSelector } from "react-redux";
+import {
+  Box,
+  Chip,
+  Container,
+  Grid,
+  makeStyles,
+  Paper,
+  Typography,
+} from "@material-ui/core";
+import { change } from "redux-form";
 import Search from "./components/Search";
 import { RootState } from "./stores";
 import { fetchWord } from "./stores/word";
 
+const useStyles = makeStyles({
+  wordList: {
+    height: "80vh",
+    padding: "20px 0",
+  },
+  wordListContent: {
+    padding: 20,
+    overflow: "scroll",
+  },
+  wordListContentHeader: {
+    "margin-bottom": 20,
+  },
+});
+
 const App: React.FunctionComponent = () => {
+  const classes = useStyles();
+
   const dispatch = useDispatch();
   const wordState = useSelector((state: RootState) => state.word);
   const relatedWordList = wordState.word.relatedWords.map((relatedWord) => (
-    <button
-      type="button"
-      className="related-word"
-      key={relatedWord.name}
-      onClick={() => dispatch(fetchWord(relatedWord.name))}
-    >
-      {relatedWord.name}
-    </button>
+    <Grid key={relatedWord.name} item>
+      <Chip
+        label={relatedWord.name}
+        onClick={() => {
+          dispatch(fetchWord(relatedWord.name));
+          dispatch(change("search", "query", relatedWord.name));
+        }}
+      />
+    </Grid>
   ));
   return (
-    <div className="App">
-      <div className="header">
+    <Container>
+      <Box>
         <Search />
-        <div className="current-word">{wordState.word.name}</div>
-      </div>
-      <div className="container">
-        <ul>{relatedWordList}</ul>
-      </div>
-    </div>
+      </Box>
+      <Box className={classes.wordList}>
+        <Paper className={classes.wordListContent}>
+          <Typography className={classes.wordListContentHeader} variant="h5">
+            Related words
+          </Typography>
+          <Grid container spacing={2}>
+            {relatedWordList}
+          </Grid>
+        </Paper>
+      </Box>
+    </Container>
   );
 };
 

@@ -1,6 +1,7 @@
 import React from "react";
 import { Field, getFormValues, reduxForm } from "redux-form";
 import { useDispatch, useSelector } from "react-redux";
+import { Button, Grid, Paper, TextField } from "@material-ui/core";
 import { fetchWord } from "../stores/word";
 
 const renderField = ({
@@ -12,10 +13,13 @@ const renderField = ({
   placeholder: string;
   type: string;
 }) => (
-  <div>
-    {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-    <input {...input} type={type} placeholder={placeholder} />
-  </div>
+  <TextField
+    type={type}
+    placeholder={placeholder}
+    variant="outlined"
+    /* eslint-disable-next-line react/jsx-props-no-spreading */
+    {...input}
+  />
 );
 
 const Search: React.FunctionComponent = () => {
@@ -23,20 +27,33 @@ const Search: React.FunctionComponent = () => {
   const query: any = useSelector((state) => getFormValues("search")(state));
   const dispatch = useDispatch();
   return (
-    <div>
-      <Field
-        name="query"
-        type="text"
-        component={renderField}
-        placeholder="Search interest"
-      />
-      <button
-        type="button"
-        onClick={() => query && dispatch(fetchWord(query.query))}
+    <Paper style={{ padding: 20 }}>
+      <Grid
+        container
+        spacing={3}
+        direction="row"
+        justify="center"
+        alignItems="center"
       >
-        search
-      </button>
-    </div>
+        <Grid item>
+          <Field
+            name="query"
+            type="text"
+            component={renderField}
+            placeholder="Input word"
+          />
+        </Grid>
+        <Grid item>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => query && dispatch(fetchWord(query.query))}
+          >
+            search
+          </Button>
+        </Grid>
+      </Grid>
+    </Paper>
   );
 };
 
