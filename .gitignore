@@ -12,5 +12,5 @@ project/**/metals.sbt
 ### vscode ###
 .vscode/*
 *.code-workspace
-
+*.iml
 # End of https://www.toptal.com/developers/gitignore/api/vscode,metals
