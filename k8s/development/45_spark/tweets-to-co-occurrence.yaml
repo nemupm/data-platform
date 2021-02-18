@@ -35,6 +35,10 @@ spec:
         path: "/tmp"
 #        path: "<HOME>/src/github.com/nemupm/data-platform/spark/tweets-to-co-occurrence/target/scala-2.12/" # for test
         type: Directory
+  arguments:
+    - "2021"
+    - "02"
+    - "18"
   driver:
     cores: 1
     memory: "512m"

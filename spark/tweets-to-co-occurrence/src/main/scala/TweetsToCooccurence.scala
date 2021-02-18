@@ -3,8 +3,9 @@ package com.nemupm.spark
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.Dataset
-import org.apache.spark.rdd.{RDD}
+import org.apache.spark.rdd.RDD
 
+import java.net.URI
 import java.sql.Timestamp
 import java.net.InetAddress
 import org.chasen.mecab.MeCab
@@ -12,9 +13,10 @@ import org.chasen.mecab.Tagger
 import org.chasen.mecab.Model
 import org.chasen.mecab.Lattice
 import org.chasen.mecab.Node
+import org.apache.hadoop.fs.{FileSystem, LocatedFileStatus, Path}
+import org.apache.hadoop.conf.Configuration
 
-import scala.collection.mutable.HashSet
-import scala.collection.mutable.Map
+import scala.collection.mutable.{ArrayBuffer, HashSet, Map}
 import play.api.libs.json._
 import com.datastax.spark.connector.cql._
 
@@ -47,6 +49,11 @@ case class WordCooccurrence(
 /** ETL job from tweets to co-occurrence of words */
 object TweetsToCooccurrence {
   def main(args: Array[String]): Unit = {
+    assert(args.length == 3)
+    val yyyy = args(0) // 2021
+    val mm = args(1) // 02
+    val dd = args(2) // 18
+
     val spark = SparkSession
       .builder
       .appName("Tweets to Co-occurrence")
@@ -62,47 +69,61 @@ object TweetsToCooccurrence {
     // Use ip address instead of hostname because "{bucket name}.hostname" cannot be resolved.
     val address: InetAddress = InetAddress.getByName(sys.env("S3_ENDPOINT_HOSTNAME"));
     val endpoint = "http://" + address.getHostAddress() + ":" + sys.env("S3_ENDPOINT_PORT");
-    sc.hadoopConfiguration.set("fs.s3a.endpoint", endpoint);
+    sc.hadoopConfiguration.set("fs.s3a.endpoint", endpoint)
 
-    val lines: RDD[String] = sc.textFile("s3a://twitter/topics/twitter.sampled-stream/year=2021/month=01/day=03/twitter.sampled-stream+0+0000019000.json")
-    val setList = lines
-      .map(rawLine => {
-        // FIXME: This is temporary solution for json parse error; Fix kafka-connect setting.
-        // RawLine's both ends' double quotes are needless.
-        // * rawLine(incorrect): "{\"log\":\"...\"}"
-        // * should be(correct): {"log":"..."}
-        val line = rawLine
-          .substring(1, rawLine.length() - 1)
-          .replaceAll("([^\\\\])\\\\\"", "$1\"") // \" -> "
-          .replaceAll("([^\\\\])\\\\\\\\\\\\\"", "$1\\\\\"") // \\\" -> \"
-          .replace("\\\\\\\\\"", "\"") // \\\\\\\" -> \\\" or ...
-          .replace("}\\\\n\"", "}\"")
-        var tweet = ""
-        val res: JsResult[Tweet] = Json.parse(line).validate[Tweet]
-        res match {
-          case JsSuccess(t: Tweet, _) => tweet = t.log
-          case e: JsError => tweet = ""
-        }
-        tweet
-      })
-      .map(log => {
-        System.loadLibrary("MeCab")
-        val res = Json.parse(log).validate[TweetLog]
-        val text = res.map(detail => detail.text).get
-
-        val tagger = new Tagger
-        var node = tagger.parseToNode(text)
-
-        var nouns = HashSet[String]()
-        while (node != null) {
-          if (node.getFeature.split(',')(0) == "名詞") {
-            nouns += node.getSurface
+    val setList = new ArrayBuffer[HashSet[String]]()
+    val targetDay = s"s3a://twitter/topics/twitter.sampled-stream/year=${yyyy}/month=${mm}/day=${dd}"
+    val conf = new Configuration()
+    conf.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+    conf.set("fs.s3a.access.key", sys.env("S3_ACCESS_KEY"))
+    conf.set("fs.s3a.secret.key", sys.env("S3_SECRET_KEY"))
+    conf.set("fs.s3a.path.style.access", "true")
+    conf.set("fs.s3a.connection.ssl.enabled", "false")
+    conf.set("fs.s3a.endpoint", endpoint)
+    val fileSystem = FileSystem.get(URI.create(targetDay), conf)
+    val itr = fileSystem.listFiles(new Path(targetDay), true)
+    while (itr.hasNext) {
+      val fileStatus: LocatedFileStatus = itr.next()
+      val lines: RDD[String] = sc.textFile(fileStatus.getPath.toString)
+      val currentSetList = lines.map(rawLine => {
+          // FIXME: This is temporary solution for json parse error; Fix kafka-connect setting.
+          // RawLine's both ends' double quotes are needless.
+          // * rawLine(incorrect): "{\"log\":\"...\"}"
+          // * should be(correct): {"log":"..."}
+          val line = rawLine
+            .substring(1, rawLine.length() - 1)
+            .replaceAll("([^\\\\])\\\\\"", "$1\"") // \" -> "
+            .replaceAll("([^\\\\])\\\\\\\\\\\\\"", "$1\\\\\"") // \\\" -> \"
+            .replace("\\\\\\\\\"", "\"") // \\\\\\\" -> \\\" or ...
+            .replace("}\\\\n\"", "}\"")
+          var tweet = ""
+          val res: JsResult[Tweet] = Json.parse(line).validate[Tweet]
+          res match {
+            case JsSuccess(t: Tweet, _) => tweet = t.log
+            case e: JsError => tweet = ""
           }
-          node = node.getNext
-        }
-        nouns
-      })
-      .collect()
+          tweet
+        })
+        .map(log => {
+          System.loadLibrary("MeCab")
+          val res = Json.parse(log).validate[TweetLog]
+          val text = res.map(detail => detail.text).get
+
+          val tagger = new Tagger
+          var node = tagger.parseToNode(text)
+
+          var nouns = HashSet[String]()
+          while (node != null) {
+            if (node.getFeature.split(',')(0) == "名詞") {
+              nouns += node.getSurface
+            }
+            node = node.getNext
+          }
+          nouns
+        })
+        .collect()
+      setList ++= currentSetList
+    }
 
     var pairs = Map[String, Map[String, Int]]()
     setList.foreach(set => {
