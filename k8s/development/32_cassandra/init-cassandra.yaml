@@ -12,11 +12,12 @@ data:
       };
 
     USE development;
-    
+
     CREATE TABLE IF NOT EXISTS word_cooccurrences (
         word      text
       , cnt       int
       , co_cnt    map<text, int>
+      , sum_cnt   map<text, int>
       , updated_at map<text, timestamp>
       , PRIMARY KEY(word)
     );
@@ -33,19 +34,24 @@ spec:
       creationTimestamp: null
     spec:
       containers:
-      - image: cassandra
-        name: init-cassandra
-        resources: {}
-        command: ["/bin/sh", "-c", "cqlsh cassandra.default.svc.cluster.local -f /tmp/init.cql"]
-        volumeMounts:
-        - mountPath: /tmp
-          name: init-cassandra-volume
+        - image: cassandra
+          name: init-cassandra
+          resources: {}
+          command:
+            [
+              "/bin/sh",
+              "-c",
+              "cqlsh cassandra.default.svc.cluster.local -f /tmp/init.cql",
+            ]
+          volumeMounts:
+            - mountPath: /tmp
+              name: init-cassandra-volume
       restartPolicy: Never
       volumes:
-      - name: init-cassandra-volume
-        configMap:
-          name: cassandra-init-cql
-          items:
-          - key: init.cql
-            path: init.cql
+        - name: init-cassandra-volume
+          configMap:
+            name: cassandra-init-cql
+            items:
+              - key: init.cql
+                path: init.cql
 status: {}
