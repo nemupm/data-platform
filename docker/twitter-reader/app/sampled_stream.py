@@ -53,14 +53,17 @@ def stream_connect(auth):
   payload = {"tweet.fields":"created_at,lang"}
   headers = {"User-Agent": "bot"}
   response = requests.get(stream_url, auth=auth, headers=headers, params=payload, stream=True)
+  response.raise_for_status()
   count = 0
   prev_time = time()
+  is_empty = True
   for response_line in response.iter_lines():
+    is_empty = False
     now = time()
     if now - prev_time > 60:
       prev_time = now
       count = 0
-    elif count >= limit_per_minute:
+    elif limit_per_minute != 0 and count >= limit_per_minute:
       continue
     if response_line:
       obj = json.loads(response_line)
@@ -72,6 +75,9 @@ def stream_connect(auth):
         continue
       print(json.dumps(data, ensure_ascii=False))
       count += 1
+
+  if is_empty:
+    raise ValueError("empty response")
 
 bearer_token = BearerTokenAuth(consumer_key, consumer_secret)
 
