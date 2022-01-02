@@ -1,19 +1,20 @@
-name: Update Spark TweetsToCooccurrence
+name: Update Twitter Library
 
 env:
-  APP_NAME: tweets-to-co-occurrence
+  APP_NAME: twitter-library
+  PROJECT_ROOT: ./library/twitter
 
 on:
   push:
     branches: [ master ]
     paths:
-      - "spark/tweets-to-co-occurrence/**"
-      - ".github/workflows/tweets-to-co-occurrence.yml"
+      - "library/twitter/**"
+      - ".github/workflows/library-twitter.yml"
   pull_request:
     branches: [ master ]
     paths:
-      - "spark/tweets-to-co-occurrence/**"
-      - ".github/workflows/tweets-to-co-occurrence.yml"
+      - "library/twitter/**"
+      - ".github/workflows/library-twitter.yml"
 
 jobs:
   build:
@@ -31,7 +32,7 @@ jobs:
 
       - name: Build package
         run: sbt assembly
-        working-directory: "./spark/${{ env.APP_NAME }}"
+        working-directory: "${{ env.PROJECT_ROOT }}"
 
       - name: Configure AWS credentials to s3 share bucket
         uses: aws-actions/configure-aws-credentials@v1
@@ -45,5 +46,5 @@ jobs:
           S3_UPLOAD_BUCKET: share.nemupm.com
           JAR_PATH: "./target/scala-2.12/${{ env.APP_NAME }}-project-assembly-1.0.jar"
         run: |
-          aws s3 cp ${JAR_PATH} s3://${S3_UPLOAD_BUCKET}/spark-application/ --acl public-read
-        working-directory: "./spark/${{ env.APP_NAME }}"
+          aws s3 cp ${JAR_PATH} s3://${S3_UPLOAD_BUCKET}/library/ --acl public-read
+        working-directory: "${{ env.PROJECT_ROOT }}"
