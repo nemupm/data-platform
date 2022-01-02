@@ -1,0 +1,50 @@
+name: Update Twitter Library
+
+env:
+  APP_NAME: twitter-library
+  PROJECT_ROOT: ./library/twitter
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - "library/twitter/**"
+      - ".github/workflows/library-twitter.yml"
+  pull_request:
+    branches: [ master ]
+    paths:
+      - "library/twitter/**"
+      - ".github/workflows/library-twitter.yml"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Build package
+        run: sbt assembly
+        working-directory: "${{ env.PROJECT_ROOT }}"
+
+      - name: Configure AWS credentials to s3 share bucket
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_S3_SHARE }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_S3_SHARE }}
+          aws-region: ap-northeast-1
+
+      - name: Upload file to S3
+        env:
+          S3_UPLOAD_BUCKET: share.nemupm.com
+          JAR_PATH: "./target/scala-2.12/${{ env.APP_NAME }}-project-assembly-1.0.jar"
+        run: |
+          aws s3 cp ${JAR_PATH} s3://${S3_UPLOAD_BUCKET}/library/ --acl public-read
+        working-directory: "${{ env.PROJECT_ROOT }}"
