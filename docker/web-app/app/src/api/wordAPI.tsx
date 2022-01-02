@@ -10,6 +10,8 @@ export interface WordCooccurrence {
   cnt: number;
   // eslint-disable-next-line camelcase
   co_cnt: { [key: string]: number };
+  // eslint-disable-next-line camelcase
+  sum_cnt: { [key: string]: number };
 }
 
 export interface WordAPIResponse<T> {
@@ -37,7 +39,7 @@ export function getWordFromResponse(
     relatedWords: Object.keys(res.data.co_cnt)
       .map((name) => {
         const cnt = res.data.co_cnt[name];
-        return { name, score: cnt * name.length, cnt };
+        return { name, score: cnt / Math.log(res.data.sum_cnt[name]), cnt };
       })
       .sort((a, b) => (a.score < b.score ? 1 : -1)),
     cnt: res.data.cnt,
